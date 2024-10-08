@@ -575,9 +575,8 @@ When working with JAXB, e.g. when converting a `String` to a corresponding `JAXB
     ** uses
         *** | mapping methods / SAME method signature & different behavior
             **** several can be | 1 mapping method
-* _Example1:_ | map mapping, hand-written methods / ALMOST SAME signature, except to name
 
-.Several mapping methods with identical source and target types
+.Several mapping methods / identical source and target types -> ambiguous mapping method error
 ====
 [source, java, linenums]
 [subs="verbatim,attributes"]
@@ -592,14 +591,7 @@ public class Titles {
         // some mapping logic
     }
 }
-----
-====
 
-.Mapper causing an ambiguous mapping method error, because SAME arguments and returns -> Mapper finds 2 qualifying methods
-====
-[source, java, linenums]
-[subs="verbatim,attributes"]
-----
 @Mapper( uses = Titles.class )
 public interface MovieMapper {
 
@@ -609,7 +601,7 @@ public interface MovieMapper {
 ----
 ====
 
-.Declaring a qualifier type
+.Declaring a qualifier type & qualifier types / mapping methods
 ====
 [source, java, linenums]
 [subs="verbatim,attributes"]
@@ -621,14 +613,12 @@ import org.mapstruct.Qualifier;
 @Retention(RetentionPolicy.CLASS)
 public @interface TitleTranslator {
 }
-----
-====
 
-.Declaring qualifier types / mapping methods
-====
+----
 [source, java, linenums]
 [subs="verbatim,attributes"]
 ----
+
 import org.mapstruct.Qualifier;
 
 @Qualifier
@@ -648,10 +638,6 @@ import org.mapstruct.Qualifier;
 public @interface GermanToEnglish {
 }
 ----
-====
-
-.Mapper using qualifiers
-====
 [source, java, linenums]
 [subs="verbatim,attributes"]
 ----
@@ -663,10 +649,6 @@ public interface MovieMapper {
 
 }
 ----
-====
-
-.Custom mapper qualifying the methods it provides
-====
 [source, java, linenums]
 [subs="verbatim,attributes"]
 ----
@@ -690,9 +672,7 @@ public class Titles {
     ** retention policy == `@Retention(RetentionPolicy.CLASS)`
     ** class / method -- annotated with a -- qualifier -> ONLY qualify mappings / have the `qualifiedBy` element
 
-* _Example2:_ Previous example -- via -- `@Named`
-
-.Custom mapper, annotating the methods to qualify by means of `@Named`
+.Previous example -- via -- `@Named`
 ====
 [source, java, linenums]
 [subs="verbatim,attributes"]
@@ -711,10 +691,6 @@ public class Titles {
     }
 }
 ----
-====
-
-.Mapper using named
-====
 [source, java, linenums]
 [subs="verbatim,attributes"]
 ----
