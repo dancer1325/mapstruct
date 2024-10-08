@@ -558,13 +558,24 @@ When working with JAXB, e.g. when converting a `String` to a corresponding `JAXB
 [[selection-based-on-qualifiers]]
 === Mapping method selection based on qualifiers
 
-In many occasions one requires mapping methods with the same method signature (apart from the name) that have different behavior.
-MapStruct has a handy mechanism to deal with such situations: `@Qualifier` (`org.mapstruct.Qualifier`).
-A ‘qualifier’ is a custom annotation that the user can write, ‘stick onto’ a mapping method which is included as used mapper
-and can be referred to in a bean property mapping, iterable mapping or map mapping.
-Multiple qualifiers can be ‘stuck onto’ a method and mapping.
-
-So, let's say there is a hand-written method to map titles with a `String` return type and `String` argument amongst many other referenced mappers with the same `String` return type  - `String` argument signature:
+* `org.mapstruct.Qualifier`
+    ** == custom annotation | mapping method /
+        *** -- is included as -- used mapper
+        *** -- can be referred to --
+            **** bean property mapping
+                ***** == `@BeanMapping#qualifiedBy`
+                ***** `@Named` & `qualifiedByName`
+                    ****** 👁️recommended alternative 👁️
+                    ****** includes `@Qualifier`
+                    ****** allows
+                        ******* naming a Mapper or
+                        ******* naming a mapping method -- via -- its value
+            **** iterable mapping
+            **** map mapping
+    ** uses
+        *** | mapping methods / SAME method signature & different behavior
+            **** several can be | 1 mapping method
+* _Example1:_ | map mapping, hand-written methods / ALMOST SAME signature, except to name
 
 .Several mapping methods with identical source and target types
 ====
@@ -584,9 +595,7 @@ public class Titles {
 ----
 ====
 
-And a mapper using this handwritten mapper, in which source and target have a property 'title' that should be mapped:
-
-.Mapper causing an ambiguous mapping method error
+.Mapper causing an ambiguous mapping method error, because SAME arguments and returns -> Mapper finds 2 qualifying methods
 ====
 [source, java, linenums]
 [subs="verbatim,attributes"]
@@ -600,10 +609,6 @@ public interface MovieMapper {
 ----
 ====
 
-Without the use of qualifiers, this would result in an ambiguous mapping method error, because 2 qualifying methods are found (`translateTitleEG`, `translateTitleGE`) and MapStruct would not have a hint which one to choose.
-
-Enter the qualifier approach:
-
 .Declaring a qualifier type
 ====
 [source, java, linenums]
@@ -612,16 +617,14 @@ Enter the qualifier approach:
 import org.mapstruct.Qualifier;
 
 @Qualifier
-@Target(ElementType.TYPE)
+@Target(ElementType.TYPE)       // type level
 @Retention(RetentionPolicy.CLASS)
 public @interface TitleTranslator {
 }
 ----
 ====
 
-And, some qualifiers to indicate which translator to use to map from source language to target language:
-
-.Declaring qualifier types for mapping methods
+.Declaring qualifier types / mapping methods
 ====
 [source, java, linenums]
 [subs="verbatim,attributes"]
@@ -629,7 +632,7 @@ And, some qualifiers to indicate which translator to use to map from source lang
 import org.mapstruct.Qualifier;
 
 @Qualifier
-@Target(ElementType.METHOD)
+@Target(ElementType.METHOD)     // method level
 @Retention(RetentionPolicy.CLASS)
 public @interface EnglishToGerman {
 }
@@ -640,16 +643,12 @@ public @interface EnglishToGerman {
 import org.mapstruct.Qualifier;
 
 @Qualifier
-@Target(ElementType.METHOD)
+@Target(ElementType.METHOD)     // method level
 @Retention(RetentionPolicy.CLASS)
 public @interface GermanToEnglish {
 }
 ----
 ====
-
-Please take note of the target `TitleTranslator` on type level, `EnglishToGerman`, `GermanToEnglish` on method level!
-
-Then, using the qualifiers, the mapping could look like this:
 
 .Mapper using qualifiers
 ====
@@ -687,22 +686,11 @@ public class Titles {
 ----
 ====
 
-[WARNING]
-====
-Please make sure the used retention policy equals retention policy `CLASS` (`@Retention(RetentionPolicy.CLASS)`).
-====
+* 👁️take in account that 👁️
+    ** retention policy == `@Retention(RetentionPolicy.CLASS)`
+    ** class / method -- annotated with a -- qualifier -> ONLY qualify mappings / have the `qualifiedBy` element
 
-[WARNING]
-====
-A class / method annotated with a qualifier will not qualify anymore for mappings that do not have the `qualifiedBy` element.
-====
-
-[TIP]
-====
-The same mechanism is also present on bean mappings: `@BeanMapping#qualifiedBy`: it selects the factory method marked with the indicated qualifier.
-====
-
-In many occasions, declaring a new annotation to aid the selection process can be too much for what you try to achieve. For those situations, MapStruct has the `@Named` annotation. This annotation is a pre-defined qualifier (annotated with `@Qualifier` itself) and can be used to name a Mapper or, more directly a mapping method by means of its value. The same example above would look like:
+* _Example2:_ Previous example -- via -- `@Named`
 
 .Custom mapper, annotating the methods to qualify by means of `@Named`
 ====
@@ -740,13 +728,15 @@ public interface MovieMapper {
 ----
 ====
 
-[WARNING]
-====
-Although the used mechanism is the same, the user has to be a bit more careful. Refactoring the name of a defined qualifier in an IDE will neatly refactor all other occurrences as well. This is obviously not the case for changing a name.
-====
 
 === Combining qualifiers with defaults
-Please note that the `Mapping#defaultValue` is in essence a `String`, which needs to be converted to the `Mapping#target`. Providing a `Mapping#qualifiedByName` or `Mapping#qualifiedBy` will force MapStruct to use that method. If you want different behavior for the `Mapping#defaultValue`, then please provide an appropriate mapping method. This mapping method needs to transforms a `String` into the desired type of `Mapping#target` and also be annotated so that it can be found by the `Mapping#qualifiedByName` or `Mapping#qualifiedBy`.
+
+* TODO:
+Please note that the `Mapping#defaultValue` is in essence a `String`, which needs to be converted to the `Mapping#target`.
+Providing a `Mapping#qualifiedByName` or `Mapping#qualifiedBy` will force MapStruct to use that method.
+If you want different behavior for the `Mapping#defaultValue`, then please provide an appropriate mapping method.
+This mapping method needs to transforms a `String` into the desired type of `Mapping#target` and also be annotated
+so that it can be found by the `Mapping#qualifiedByName` or `Mapping#qualifiedBy`.
 
 .Mapper using defaultValue
 ====
