@@ -157,6 +157,7 @@ dependencies {
   * `./mvnw clean install`
   * `./mvnw clean install -DskipDistribution=true`
     * if you want to skip the distribution module
+
     
 ## Importing into IDE
 
