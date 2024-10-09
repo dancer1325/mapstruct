@@ -19,48 +19,72 @@
 
 ## What is MapStruct?
 
-MapStruct is a Java [annotation processor](https://docs.oracle.com/javase/6/docs/technotes/guides/apt/index.html) for the generation of type-safe and performant mappers for Java bean classes. It saves you from writing mapping code by hand, which is a tedious and error-prone task. The generator comes with sensible defaults and many built-in type conversions, but it steps out of your way when it comes to configuring or implementing special behavior.
+* == Java [annotation processor](https://docs.oracle.com/javase/6/docs/technotes/guides/apt/index.html) 
+  * goal
+    * generation of mappers -- for -- Java bean classes 
+      * type-safe
+      * performant
+  * allows
+    * alternative to write mapping code by hand / can be
+      * tedious
+      * error-prone
+  * features
+    * type conversions
+      * sensible defaults
+      * many
+  * vs mapping frameworks | runtime
+    * **Fast execution**
+      * Reason: 🧠use plain method invocations -- instead of -- reflection 🧠
+    * **Compile-time type safety**
+      * ONLY objects and attributes / mapping to each other -- can be -- mapped
+    * **Self-contained code**
+      * == NO runtime dependencies
+    * **Clear error reports** | build time, if
+      * mappings are incomplete 
+        * == NOT ALL target properties -- are -- mapped
+      * mappings are incorrect 
+        * == can NOT find a proper mapping method or type conversion
+    * **Easily debuggable mapping code**
 
-Compared to mapping frameworks working at runtime, MapStruct offers the following advantages:
+* how does it work?
+  * declare a mapper interface / will map between 2 types
 
-* **Fast execution** by using plain method invocations instead of reflection
-* **Compile-time type safety**. Only objects and attributes mapping to each other can be mapped, so there's no accidental mapping of an order entity into a customer DTO, etc.
-* **Self-contained code**—no runtime dependencies
-* **Clear error reports** at build time if:
-  * mappings are incomplete (not all target properties are mapped)
-  * mappings are incorrect (cannot find a proper mapping method or type conversion)
-* **Easily debuggable mapping code** (or editable by hand—e.g. in case of a bug in the generator)
+    ```java
+    @Mapper
+    public interface CarMapper {
+    
+        CarMapper INSTANCE = Mappers.getMapper( CarMapper.class );
+    
+        @Mapping(target = "seatCount", source = "numberOfSeats")
+        CarDto carToCarDto(Car car);
+    }
+    ```
 
-To create a mapping between two types, declare a mapper interface like this:
-
-```java
-@Mapper
-public interface CarMapper {
-
-    CarMapper INSTANCE = Mappers.getMapper( CarMapper.class );
-
-    @Mapping(target = "seatCount", source = "numberOfSeats")
-    CarDto carToCarDto(Car car);
-}
-```
-
-At compile time MapStruct will generate an implementation of this interface. The generated implementation uses plain Java method invocations for mapping between source and target objects, i.e. no reflection is involved. By default, properties are mapped if they have the same name in source and target, but you can control this and many other aspects using `@Mapping` and a handful of other annotations.
+  * once you compile it -> MapStruct -- will generate an -- implementation of this interface /
+    * for mapping between source and target objects -- uses -- plain Java method invocations (NO reflection)
+    * properties are mapped
+      * by default, if source's property name == target's property name
+      * & customized -- via -- annotations (_Example:_ `@Mapping`) 
 
 ## Requirements
 
-MapStruct requires Java 1.8 or later.
+* Java v1.8+
 
 ## Using MapStruct
 
-MapStruct works in command line builds (plain javac, via Maven, Gradle, Ant, etc.) and IDEs.
-
-For Eclipse, a dedicated plug-in is in development (see https://github.com/mapstruct/mapstruct-eclipse). It goes beyond what's possible with an annotation processor, providing content assist for annotation attributes, quick fixes and more.
-
-For IntelliJ the plug-in is available within the IntelliJ marketplace (see https://plugins.jetbrains.com/plugin/10036-mapstruct-support).
+* works -- via --
+  * CL builds (plain javac, via Maven, Gradle, Ant, etc.)
+    * if you do NOT use a dependency management tool -> you can obtain a [distribution bundle from | Releases](https://github.com/mapstruct/mapstruct/releases)
+  * IDEs
+    * Eclipse, a [dedicated plug-in is in development](https://github.com/mapstruct/mapstruct-eclipse) / provides content assist for
+      * annotation attributes
+      * quick fixes
+    * IntelliJ, a [dedicated plug-in](https://plugins.jetbrains.com/plugin/10036-mapstruct-support)
 
 ### Maven
 
-For Maven-based projects, add the following to your POM file in order to use MapStruct (the dependencies are available at Maven Central):
+* add | your "pom.xml" 
+  * ALL dependencies are available | Maven Central
 
 ```xml
 ...
@@ -101,7 +125,7 @@ For Maven-based projects, add the following to your POM file in order to use Map
 
 ### Gradle
 
-For Gradle, you need something along the following lines:
+* add | "build.gradle"
 
 ```groovy
 plugins {
@@ -119,35 +143,37 @@ dependencies {
 ...
 ```
 
-If you don't work with a dependency management tool, you can obtain a distribution bundle from [Releases page](https://github.com/mapstruct/mapstruct/releases).
-
 ## Documentation and getting help
 
-To learn more about MapStruct, refer to the [project homepage](https://mapstruct.org). The [reference documentation](https://mapstruct.org/documentation/reference-guide/) covers all provided functionality in detail. If you need help please ask it in the [Discussions](https://github.com/mapstruct/mapstruct/discussions).
+* [reference documentation](https://mapstruct.org/documentation/reference-guide/)
+* [Discussions](https://github.com/mapstruct/mapstruct/discussions)
 
-## Building from Source
+## Building Mapstruct from Source
 
-MapStruct uses Maven for its build. Java 11 is required for building MapStruct from source. To build the complete project, run
-
-    ./mvnw clean install
-
-from the root of the project directory. To skip the distribution module, run 
-
-    ./mvnw clean install -DskipDistribution=true
+* requirements
+  * Java v11+
+  * Maven
+* ways
+  * `./mvnw clean install`
+  * `./mvnw clean install -DskipDistribution=true`
+    * if you want to skip the distribution module
     
 ## Importing into IDE
 
-MapStruct uses the gem annotation processor to generate mapping gems for its own annotations.
-Therefore, for seamless integration within an IDE annotation processing needs to be enabled.
+* requirements
+  * enable annotation processing | IDE
+    * Reason: 🧠MapStruct, to generate mapping gems for its own annotations -- uses the -- gem annotation processor 🧠
 
 ### IntelliJ 
 
-Make sure that you have at least IntelliJ 2018.2.x (needed since support for `annotationProcessors` from the `maven-compiler-plugin` is from that version).
-Enable annotation processing in IntelliJ (Build, Execution, Deployment -> Compiler -> Annotation Processors)
+* requirements
+  * IntelliJ v2018.2.x+
+    * Reason: 🧠needed support for `maven-compiler-plugin` 's `annotationProcessors` 🧠
+* Enable annotation processing in IntelliJ (Build, Execution, Deployment -> Compiler -> Annotation Processors)
 
 ### Eclipse
 
-Make sure that you have the [m2e_apt](https://marketplace.eclipse.org/content/m2e-apt) plugin installed.
+* install [m2e_apt](https://marketplace.eclipse.org/content/m2e-apt) 
 
 ## Links
 
